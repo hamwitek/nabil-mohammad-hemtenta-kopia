@@ -1,0 +1,48 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # Step 3: Build and push Docker image
+      - name: Build and push Docker image
+        run: |
+          docker build -t nabelb/hemtenta-api:latest .
+          docker push nabelb/hemtenta-api:latest
+
+      # Step 4: SSH to EC2 and deploy
+      - name: SSH to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Log in to Docker Hub
+            echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            # Navigate to the project directory
+            cd /home/ubuntu/nabil-mohammad-hemtenta
+
+            # Pull the latest Docker image
+            docker pull nabelb/hemtenta-api:latest
+
+            # Restart the containers
+            docker-compose down
+            docker-compose up -d
