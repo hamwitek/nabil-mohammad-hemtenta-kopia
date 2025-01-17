@@ -38,7 +38,7 @@ jobs:
             echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
             # Navigate to the project directory
-            cd /home/ubuntu/nabil-mohammad-hemtenta
+            cd /home/ubuntu/nabil-mohammad-hemtenta-kopia
 
             # Pull the latest Docker image
             docker pull nabelb/hemtenta-api:latest
